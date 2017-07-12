@@ -1,0 +1,92 @@
+extends layout
+
+append head
+	link(rel='stylesheet', href='/stylesheets/main-view.css')
+
+block content
+	.container
+		.header.clearfix
+			nav
+				ul.nav.nav-pills.float-right
+					li.nav-item
+						a#nav-home.nav-link.active(href='/')
+							span.sr-only (current)
+					li.nav-item
+						a#nav-logout.nav-link(href='/logout') logout
+		.jumbotron#welcome
+			.container
+				.row
+					.col-sm-6
+						h1#title
+						p#about
+					.col-sm-6.hero
+						
+	.container
+		#banker-response.well
+		.input-group
+			span.input-group-btn
+				button#speaker-button.btn.btn-default(type='button')
+					i.fa.fa-volume-up
+				button#speech-query-button.btn.btn-default(type='button')
+					i.fa.fa-microphone
+				button#banker-query-button.btn.btn-default(type='button')
+					i.fa.fa-search
+			input#banker-query.form-control(type='text',autofocus='autofocus')
+	.container
+		hr
+		audio#audio.hidden(controls='', autoplay='')
+	.container
+		.row
+			.col-sm-8
+				#accordion.panel-group
+					.panel.panel-default
+						.panel-heading
+							h4.panel-title
+								a#profile-tab(data-toggle='collapse', data-parent='#accordion', href='#profile')
+						#profile.panel-collapse.collapse.in
+							.panel-body
+								form
+									.form-group
+										label#family-message(for='family')
+										input#family.form-control(type='text', disabled='')
+										label#given-message(for='given')
+										input#given.form-control(type='text', disabled='')
+										label#city-message(for='city')
+										input#city.form-control(type='text', disabled='')
+										label#state-message(for='state')
+										input#state.form-control(type='text', disabled='')
+					.panel.panel-default
+						.panel-heading
+							h4.panel-title
+								a#accounts-tab(data-toggle='collapse', data-parent='#accordion', href='#accounts')
+						#accounts.panel-collapse.collapse.in
+							.panel-body
+								table#account-table.table.table-striped(style='width: 100%;')
+					.panel.panel-default
+						.panel-heading
+							h4.panel-title
+								a#offers-tab(data-toggle='collapse', data-parent='#accordion', href='#offers')
+						#offers.panel-collapse.collapse.in
+							.panel-body
+								form#offer-form
+									.form-group
+										label#offer-message(for='special-offers')
+										input#special-offers.form-control(type='text', disabled='')
+								table#offer-table.table.table-striped(style='width: 100%;')
+			.col-sm-4
+				.form-group
+					label#weather(for='forecast')
+					textarea#forecast.form-control(rows='5')
+					label#actions(for='recommendations')
+					textarea#recommendations.form-control(rows='5')
+				#map
+append scripts
+	script(src='/js/weather.js')
+	script(src='/js/resources.js')
+	script(src='/js/profile.js')
+	script(src='/js/banker.js')
+	script(src='/js/conversation.js')
+	script(src='/js/watson-speech.js')
+	script(src='/js/offers.js')
+	script(src='/js/insights.js')
+	script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyDdSh6ucn8fWQGw4YQnwK7Q1Cu59hGS0w8', async='', defer='')

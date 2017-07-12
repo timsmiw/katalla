@@ -1,0 +1,139 @@
+[
+		{
+			"id" : "aeb3779b.4ddda8",
+			"type" : "tab",
+			"label" : "Get Behavioral Insights"
+		},
+		{
+			"id" : "d4edd1e8.cc2ef8",
+			"type" : "http in",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "",
+			"url" : "/behavioralinsights/:customer",
+			"method" : "get",
+			"swaggerDoc" : "",
+			"x" : 207.5,
+			"y" : 107,
+			"wires" : [ [ "822f7c2.63f06" ] ]
+		},
+		{
+			"id" : "822f7c2.63f06",
+			"type" : "function",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "Setup",
+			"func" : "msg.payload = { 'messageType': \"CSC_DN\",\n                'httpReqType': 'GET',\n                'callingServiceDomain': 'CustomerBehavioralInsights',\n                'callingServiceOperation': 'retrieveCustomerBehavioralAnalysis',\n                'instruction': 'profiledata',\n                'payload' :  {'appInData': {'user': msg.req.params.customer }}};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 201.5,
+			"y" : 193,
+			"wires" : [ [ "139a3845.6a23c" ] ]
+		},
+		{
+			"id" : "139a3845.6a23c",
+			"type" : "openwhisk-action",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "CustomerReferenceDataManagement_retrieveCustomerReferenceDataDirectory",
+			"func" : "",
+			"namespace" : "CSC-BIAN-PNC_Dev",
+			"action" : "CustomerReferenceDataManagement_retrieveCustomerReferenceDataDirectory",
+			"params" : [ {
+				"disabled" : true
+			} ],
+			"service" : "41294052.876df8",
+			"edit" : false,
+			"x" : 429.5,
+			"y" : 260,
+			"wires" : [ [ "36c53214.a32876" ] ]
+		},
+		{
+			"id" : "36c53214.a32876",
+			"type" : "function",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "Setup BBCI call",
+			"func" : "msg.profile = msg.payload;\nif (msg.profile.payload.appOutData.custdata.bbci ) {\n   msg.bbciref = msg.profile.payload.appOutData.custdata.bbci;\n} else {\n    msg.bbciref = null;\n}\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 339.5,
+			"y" : 386,
+			"wires" : [ [ "3a4f3c63.86606c" ] ]
+		},
+		{
+			"id" : "e8d6e744.be5af8",
+			"type" : "http request",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "Call BBCI",
+			"method" : "GET",
+			"ret" : "obj",
+			"url" : "https://silab.mybluemix.net/bbci/customer?customerid={{{bbciref}}}",
+			"tls" : "",
+			"x" : 543.5,
+			"y" : 463,
+			"wires" : [ [ "e058e82f.89ad7" ] ]
+		},
+		{
+			"id" : "e058e82f.89ad7",
+			"type" : "function",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "Build Response",
+			"func" : "msg.bbci = msg.payload;\nvar full_name = msg.profile.payload.appOutData.custdata.givenName + \" \" + msg.profile.payload.appOutData.custdata.surname;\nvar address = msg.profile.payload.appOutData.custdata.address;\nmsg.bbci.peer_groups.forEach(function (group) {\n    group.customers.forEach(function (customer){\n       customer.full_name =  full_name;\n       customer.contact.city = address.city;\n       customer.contact.street = address.streetAddress;\n       customer.contact.state = address.state;\n       customer.contact.country = address.country;\n       customer.contact.email = msg.profile.payload.appOutData.custdata.email;\n    });\n});\nmsg.headers = {'content-type':'application/json'};\nmsg.statusCode = 200;\nmsg.payload = {'status': 'OK', 'bbci': msg.bbci};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 802.5,
+			"y" : 466,
+			"wires" : [ [ "7c07abf0.2200b4" ] ]
+		},
+		{
+			"id" : "7c07abf0.2200b4",
+			"type" : "http response",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "BI Out",
+			"x" : 1021.5,
+			"y" : 596,
+			"wires" : []
+		},
+		{
+			"id" : "59a4a2af.fa9d1c",
+			"type" : "comment",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "Target flow for CustomerBehavioralInsights_retrieveCustomerBehavioralAnalysis",
+			"info" : "",
+			"x" : 736,
+			"y" : 58,
+			"wires" : []
+		},
+		{
+			"id" : "3a4f3c63.86606c",
+			"type" : "switch",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "BBCI Reference?",
+			"property" : "bbciref",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "null"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 549,
+			"y" : 388,
+			"wires" : [ [ "7cdbefa2.f19668" ], [ "e8d6e744.be5af8" ] ]
+		},
+		{
+			"id" : "7cdbefa2.f19668",
+			"type" : "function",
+			"z" : "aeb3779b.4ddda8",
+			"name" : "No BBCI available",
+			"func" : "msg.statusCode = 404;\nmsg.headers = {'content-type':'application/json'};\nmsg.payload = {'status': 'NOTFOUND'};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 811,
+			"y" : 335,
+			"wires" : [ [ "7c07abf0.2200b4" ] ]
+		}, {
+			"id" : "41294052.876df8",
+			"type" : "openwhisk-service",
+			"z" : "",
+			"name" : "bian-openwhisk",
+			"api" : "https://openwhisk.ng.bluemix.net/api/v1"
+		} ]

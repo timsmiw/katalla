@@ -1,0 +1,311 @@
+[
+		{
+			"id" : "88bcb498.b801b8",
+			"type" : "tab",
+			"label" : "Get Customer Offers"
+		},
+		{
+			"id" : "935e4e10.337958",
+			"type" : "http in",
+			"z" : "88bcb498.b801b8",
+			"name" : "Get Offers",
+			"url" : "/offers/:customer",
+			"method" : "get",
+			"swaggerDoc" : "",
+			"x" : 80,
+			"y" : 30,
+			"wires" : [ [ "598d83ad.4a0934" ] ]
+		},
+		{
+			"id" : "598d83ad.4a0934",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Setup",
+			"func" : "msg.lat = msg.payload.lat;\nmsg.lon = msg.payload.lon;\nmsg.destlang = msg.payload.lang;\nmsg.srclang = \"en\";\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 102,
+			"y" : 94,
+			"wires" : [ [ "270afd6a.e853da" ] ]
+		},
+		{
+			"id" : "ce0af539.d3d9c8",
+			"type" : "http response",
+			"z" : "88bcb498.b801b8",
+			"name" : "Offers Error",
+			"x" : 249,
+			"y" : 308,
+			"wires" : []
+		},
+		{
+			"id" : "270afd6a.e853da",
+			"type" : "http request",
+			"z" : "88bcb498.b801b8",
+			"name" : "Query Offer Database",
+			"method" : "GET",
+			"ret" : "obj",
+			"url" : "https://74f206ff-09e9-449d-8e5e-680578bcb9a5-bluemix.cloudant.com/offers/_design/geodd/_geo/geoidx?lat={{{lat}}}&lon={{{lon}}}&radius=5000&limit=5&relation=contains&nearest=true&include_docs=true",
+			"tls" : "",
+			"x" : 159,
+			"y" : 157,
+			"wires" : [ [ "a3bcd2e9.f3e498" ] ]
+		},
+		{
+			"id" : "7ee94f7a.533f58",
+			"type" : "watson-translator",
+			"z" : "88bcb498.b801b8",
+			"name" : "Translate",
+			"action" : "translate",
+			"basemodel" : "ar-en",
+			"domain" : "conversational",
+			"srclang" : "en",
+			"destlang" : "es",
+			"password" : "ebN6v1kFURZ",
+			"custom" : "",
+			"domainhidden" : "conversational",
+			"srclanghidden" : "en",
+			"destlanghidden" : "es",
+			"basemodelhidden" : "ar-en",
+			"customhidden" : "",
+			"filetype" : "forcedglossary",
+			"trainid" : "",
+			"lgparams2" : true,
+			"ldparamshidden2" : "true",
+			"x" : 616.9285278320312,
+			"y" : 428.0000305175781,
+			"wires" : [ [ "541e9ca6.900ac4" ] ]
+		},
+		{
+			"id" : "a3bcd2e9.f3e498",
+			"type" : "switch",
+			"z" : "88bcb498.b801b8",
+			"name" : "Successful Call?",
+			"property" : "statusCode",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "200",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 217.5,
+			"y" : 242,
+			"wires" : [ [ "de49c949.9a02d8" ], [ "ce0af539.d3d9c8" ] ]
+		},
+		{
+			"id" : "de49c949.9a02d8",
+			"type" : "switch",
+			"z" : "88bcb498.b801b8",
+			"name" : "Any Offers?",
+			"property" : "payload.rows.length",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "gt",
+				"v" : "0",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 423.5,
+			"y" : 236,
+			"wires" : [ [ "dd514089.6ec298" ], [ "c8bf1f9e.cc3d78" ] ]
+		},
+		{
+			"id" : "c8bf1f9e.cc3d78",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "No Offers",
+			"func" : "msg.payload = 'Nothing new here, please check back later';\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 424.5000305175781,
+			"y" : 336.142822265625,
+			"wires" : [ [ "5e30b8b5.9ddc88" ] ]
+		},
+		{
+			"id" : "541e9ca6.900ac4",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "No Offers",
+			"func" : "var offers = {message: '',count: 0, detail:[]};\noffers.message = msg.payload;\nmsg.offers = offers;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 630.9287719726562,
+			"y" : 544.142822265625,
+			"wires" : [ [ "da9e287e.81336" ] ]
+		},
+		{
+			"id" : "5b2bb5b5.2c0dd4",
+			"type" : "http response",
+			"z" : "88bcb498.b801b8",
+			"name" : "Offers Out",
+			"x" : 936.5,
+			"y" : 626.71435546875,
+			"wires" : []
+		},
+		{
+			"id" : "5e30b8b5.9ddc88",
+			"type" : "switch",
+			"z" : "88bcb498.b801b8",
+			"name" : "Translate?",
+			"property" : "srclang",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "neq",
+				"v" : "destlang",
+				"vt" : "msg"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 417.9285583496094,
+			"y" : 408.1428527832031,
+			"wires" : [ [ "7ee94f7a.533f58" ], [ "541e9ca6.900ac4" ] ]
+		},
+		{
+			"id" : "dd514089.6ec298",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Extract Rows",
+			"func" : "msg.savedOffers = msg.payload\nmsg.payload = msg.payload.rows;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 400.51593017578125,
+			"y" : 139.6507568359375,
+			"wires" : [ [ "a8750a15.d1459" ] ]
+		},
+		{
+			"id" : "da9e287e.81336",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Build Response",
+			"func" : "msg.payload = msg.offers;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 907.5001220703125,
+			"y" : 539.857177734375,
+			"wires" : [ [ "5b2bb5b5.2c0dd4" ] ]
+		},
+		{
+			"id" : "43c9039b.d02f44",
+			"type" : "split",
+			"z" : "88bcb498.b801b8",
+			"name" : "Fan out",
+			"splt" : "\\n",
+			"x" : 624.881103515625,
+			"y" : 38.603118896484375,
+			"wires" : [ [ "75773a94.75565c" ] ]
+		},
+		{
+			"id" : "a8750a15.d1459",
+			"type" : "switch",
+			"z" : "88bcb498.b801b8",
+			"name" : "Translate Details?",
+			"property" : "srclang",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "neq",
+				"v" : "destlang",
+				"vt" : "msg"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 395.0237121582031,
+			"y" : 50.52379608154297,
+			"wires" : [ [ "43c9039b.d02f44" ], [ "69d1677a.138638" ] ]
+		},
+		{
+			"id" : "319d0c32.d5cc54",
+			"type" : "watson-translator",
+			"z" : "88bcb498.b801b8",
+			"name" : "Translate Description",
+			"action" : "translate",
+			"basemodel" : "ar-en",
+			"domain" : "conversational",
+			"srclang" : "en",
+			"destlang" : "es",
+			"password" : "",
+			"custom" : "",
+			"domainhidden" : "conversational",
+			"srclanghidden" : "en",
+			"destlanghidden" : "es",
+			"basemodelhidden" : "ar-en",
+			"customhidden" : "",
+			"filetype" : "forcedglossary",
+			"trainid" : "",
+			"lgparams2" : true,
+			"ldparamshidden2" : "true",
+			"x" : 834.0238037109375,
+			"y" : 261.9998779296875,
+			"wires" : [ [ "1cca38ef.95278f" ] ]
+		},
+		{
+			"id" : "75773a94.75565c",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Grab Description",
+			"func" : "msg.saveddetail = msg.payload;\nmsg.payload = msg.payload.doc.description;\nmsg.srclang = \"en\";\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 709.7857666015625,
+			"y" : 122.09530639648438,
+			"wires" : [ [ "319d0c32.d5cc54" ] ]
+		},
+		{
+			"id" : "1cca38ef.95278f",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Set Translated",
+			"func" : "msg.saveddetail.doc.description = msg.payload;\nmsg.payload = msg.saveddetail;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 962.4287109375,
+			"y" : 171,
+			"wires" : [ [ "d5088c9.1dc26f" ] ]
+		},
+		{
+			"id" : "d5088c9.1dc26f",
+			"type" : "join",
+			"z" : "88bcb498.b801b8",
+			"name" : "",
+			"mode" : "auto",
+			"build" : "string",
+			"property" : "payload",
+			"propertyType" : "msg",
+			"key" : "topic",
+			"joiner" : "\\n",
+			"timeout" : "",
+			"count" : "",
+			"x" : 1008.571533203125,
+			"y" : 330,
+			"wires" : [ [ "69d1677a.138638" ] ]
+		},
+		{
+			"id" : "69d1677a.138638",
+			"type" : "function",
+			"z" : "88bcb498.b801b8",
+			"name" : "Package Offers",
+			"func" : "var offers = {message: '',count: 0,detail:[]};\noffers.detail = msg.payload;\noffers.count = offers.detail.length;\nmsg.offers = offers;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 852.28564453125,
+			"y" : 435.85711669921875,
+			"wires" : [ [ "da9e287e.81336" ] ]
+		}, {
+			"id" : "33f47bc8.aea08c",
+			"type" : "comment",
+			"z" : "88bcb498.b801b8",
+			"name" : "This flow not yet BIAN-ized.",
+			"info" : "",
+			"x" : 129,
+			"y" : 357,
+			"wires" : []
+		} ]

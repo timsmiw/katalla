@@ -1,0 +1,29 @@
+applications:
+- path: .
+  memory: 512M
+  instances: 1
+  domain: mybluemix.net
+  name: katalla
+  host: katalla
+  disk_quota: 1024M
+  services:
+    - "Cloudant NoSQL DB-katalla"
+    - "Globalization Pipeline-katalla"
+    - "Weather Company Data-katalla"
+    - "Language Translator-katalla"
+    - "Text to Speech-katalla"
+    - "Speech to Text-katalla"
+    - "Conversation-katalla"
+  env:
+    APPLID: VirtualBanker
+    API_KEY: xx
+    CALLBACK_URL: xx
+    CHAIN_NAME: xx
+    NODE_ENV: production
+    POLICY_API: xx
+    SESSION_SECRET: 641b9e13-aa6e-4aa4-9683-ac14cc7a190d
+    WORKSPACE_ENGLISH: 39e7b032-e150-4170-b75d-85baefa27bf4
+    WORKSPACE_FRENCH: xx
+    WORKSPACE_SPANISH: xx
+    DN_ROOT: https://openwhisk.ng.bluemix.net/api/v1/namespaces/CSC-BIAN-PNC_Dev/actions/
+    DN_AUTH: MDJiYmZmN2EtZTNkMS00YTNkLWI0MTUtNjc3YjQ2MGRjZWE0OnZkNXg4c3dsWUNYUERrOTlFaEZUQzdhSkR5OWN2bnNhVkRjSDBJZEE4d3RmQ0lTREw5SmhuVEx0V2lPbFh6N2k=

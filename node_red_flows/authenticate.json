@@ -1,0 +1,301 @@
+[
+		{
+			"id" : "fa1d17e1.0ff8a8",
+			"type" : "subflow",
+			"name" : "Call ConfidentID",
+			"info" : "",
+			"in" : [ {
+				"x" : 50,
+				"y" : 30,
+				"wires" : [ {
+					"id" : "322e8a4e.046d5e"
+				} ]
+			} ],
+			"out" : [ {
+				"x" : 863,
+				"y" : 325,
+				"wires" : [ {
+					"id" : "dbae8bb4.a4bd1",
+					"port" : 0
+				} ]
+			} ]
+		},
+		{
+			"id" : "322e8a4e.046d5e",
+			"type" : "http request",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Call ConfidentID",
+			"method" : "POST",
+			"ret" : "txt",
+			"url" : "https://api.us.apiconnect.ibmcloud.com/individual-spaces-tclark47/sb/CID?client_id=bed44d09-ac87-46f6-a0d6-3b9229868314",
+			"tls" : "",
+			"x" : 131,
+			"y" : 101,
+			"wires" : [ [ "b565397e.98a5d" ] ]
+		},
+		{
+			"id" : "dbae8bb4.a4bd1",
+			"type" : "switch",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Success?",
+			"property" : "payload.response.code",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "0",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 560,
+			"y" : 332,
+			"wires" : [ [], [ "ed54e1db.106d28" ] ]
+		},
+		{
+			"id" : "7f03b65d.a58ab",
+			"type" : "xml",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "to JSON",
+			"attr" : "",
+			"chr" : "",
+			"x" : 457.5,
+			"y" : 184,
+			"wires" : [ [ "d1d0b8ce.1796c" ] ]
+		},
+		{
+			"id" : "d1d0b8ce.1796c",
+			"type" : "function",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Build CID Object",
+			"func" : "//var cidStatus = msg.payload.soap:Body[0];\nvar cidStatus = {response:{code:0,message:''},body: {}};\nvar body = msg.payload.soapEnvelope.soapBody[0];\nvar response = body[Object.keys( body )[ 0 ]][0];\ncidStatus.body = response;\n//msg.payload = response;\ncidStatus.response.code = response.ResponseStatus[0].ReturnCode[0];\ncidStatus.response.message = response.ResponseStatus[0].Message[0];\nmsg.payload = cidStatus;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 515.5,
+			"y" : 256,
+			"wires" : [ [ "dbae8bb4.a4bd1" ] ]
+		},
+		{
+			"id" : "219c195d.b6796e",
+			"type" : "function",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Conversion Options",
+			"func" : "msg.options = {ignoreAttrs: true,tagNameProcessors: [function(name){return name.replace(\":\", \"\")}]};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 389.5,
+			"y" : 103,
+			"wires" : [ [ "7f03b65d.a58ab" ] ]
+		},
+		{
+			"id" : "b565397e.98a5d",
+			"type" : "switch",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Good HTTP Response?",
+			"property" : "statusCode",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "200",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 177.5,
+			"y" : 178,
+			"wires" : [ [ "219c195d.b6796e" ], [ "9c109904.069198" ] ]
+		},
+		{
+			"id" : "6371256b.62f1d4",
+			"type" : "function",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Prepare Error ",
+			"func" : "var serverStatus = {message:'Unexpected error calling ConfidentID', httpStatus: msg.statusCode, response:{}};\nmsg.statusCode = 500;\nserverStatus.response = msg.payload.errorResponse;\nmsg.payload = serverStatus;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 268.5,
+			"y" : 325,
+			"wires" : [ [ "6e15947e.ea041c" ] ]
+		},
+		{
+			"id" : "6e15947e.ea041c",
+			"type" : "http response",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Error Response",
+			"x" : 736.5,
+			"y" : 516,
+			"wires" : []
+		},
+		{
+			"id" : "9c109904.069198",
+			"type" : "xml",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Error to JSON",
+			"attr" : "",
+			"chr" : "",
+			"x" : 232.5,
+			"y" : 242,
+			"wires" : [ [ "6371256b.62f1d4" ] ]
+		},
+		{
+			"id" : "ed54e1db.106d28",
+			"type" : "function",
+			"z" : "fa1d17e1.0ff8a8",
+			"name" : "Prepare CID Error",
+			"func" : "var serverStatus = {message:'Unexpected response from ConfidentID', response: msg.payload.response};\nmsg.statusCode = 500;\nmsg.payload = serverStatus;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 703.5,
+			"y" : 401,
+			"wires" : [ [ "6e15947e.ea041c" ] ]
+		},
+		{
+			"id" : "9de0b081.220408",
+			"type" : "tab",
+			"label" : "Authenticate"
+		},
+		{
+			"id" : "2abfbd24.5ab78a",
+			"type" : "http in",
+			"z" : "9de0b081.220408",
+			"name" : "Authentication",
+			"url" : "/Authenticate",
+			"method" : "post",
+			"swaggerDoc" : "",
+			"x" : 103.78570556640625,
+			"y" : 41.14282989501953,
+			"wires" : [ [ "18592235.3bb5be" ] ]
+		},
+		{
+			"id" : "18592235.3bb5be",
+			"type" : "function",
+			"z" : "9de0b081.220408",
+			"name" : "Setup Transaction",
+			"func" : "var cid = {policy:'', serviceProvider:'bankomatic', tranID:'', customerID:'', tranDesc: '', pollCount:0, pollMax:10};\ncid.policy = msg.payload.policy;\ncid.tranID = new Date().getTime().toString();\ncid.serviceProvider = 'bankomatic';\ncid.customerID = msg.payload.profile;\ncid.tranDesc = msg.payload.description;\nglobal.set(\"cid\",cid);\n\nmsg.payload = '<soap-env:Envelope' +\n' xmlns:soap-env=\"http://schemas.xmlsoap.org/soap/envelope/\">' +\n '<soap-env:Body>' +\n  '<schema:GenerateTransactionRequest' +\n' xmlns:schema=\"http://www.daon.com/ws/identityx\"' +\n' xmlns:wsde=\"http://www.daon.com/ws/de\">' +\n   '<wsde:GenericRequestParameters><!-- mandatory -->' +\n    '<wsde:Timestamp>2016-04-18T14:07:37</wsde:Timestamp>' +\n    '<wsde:ApplicationIdentifier><!-- mandatory -->string</wsde:ApplicationIdentifier>' +\n    '<wsde:ApplicationUserIdentifier><!-- mandatory -->string</wsde:ApplicationUserIdentifier>' +\n   '</wsde:GenericRequestParameters>' +\n   '<schema:Version>V4_1</schema:Version>' +\n   '<schema:ServiceProviderIdentifier>' + cid.serviceProvider + '</schema:ServiceProviderIdentifier>' +\n   '<schema:CustomerIdentifier>' + cid.customerID + '</schema:CustomerIdentifier>' +\n   '<schema:SPTransactionIdentifier>'+ cid.tranID + '</schema:SPTransactionIdentifier>' +\n   '<schema:SPTransactionDescription>' + cid.tranDesc + '</schema:SPTransactionDescription>' +\n   '<schema:PolicyIdentifier>' + cid.policy + '</schema:PolicyIdentifier>' +\n   '<schema:TransactionType>IDENTITYX</schema:TransactionType>' +\n   '<schema:GenerateOTP>false</schema:GenerateOTP>' +\n   '<schema:Recurring>false</schema:Recurring>' +\n  '</schema:GenerateTransactionRequest>' +\n '</soap-env:Body>' +\n'</soap-env:Envelope>'\nmsg.headers = {'content-type':'text/xml',\n    'accept' : 'application/xml',\n    'SOAPAction' : 'http://www.daon.com/ws/identityx/ServiceProviderGateway/GenerateTransaction'\n};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 165.0714111328125,
+			"y" : 126.00000762939453,
+			"wires" : [ [ "d35873b2.4e3818" ] ]
+		},
+		{
+			"id" : "5d680a29.d2fbcc",
+			"type" : "http response",
+			"z" : "9de0b081.220408",
+			"name" : "Authenticate Out",
+			"x" : 680.5,
+			"y" : 141.14285278320312,
+			"wires" : []
+		},
+		{
+			"id" : "d35873b2.4e3818",
+			"type" : "subflow:fa1d17e1.0ff8a8",
+			"z" : "9de0b081.220408",
+			"name" : "Generate Transaction",
+			"x" : 221.49996948242188,
+			"y" : 190.57138061523438,
+			"wires" : [ [ "f6bb8af3.63447" ] ]
+		},
+		{
+			"id" : "afd8ba0b.9fd4d8",
+			"type" : "function",
+			"z" : "9de0b081.220408",
+			"name" : "Setup Transaction Check",
+			"func" : "var cid = global.get(\"cid\");\n\nmsg.payload = '<soap-env:Envelope' +\n' xmlns:soap-env=\"http://schemas.xmlsoap.org/soap/envelope/\">' +\n '<soap-env:Body>' +\n  '<schema:GetTransactionStatusRequest' +\n' xmlns:schema=\"http://www.daon.com/ws/identityx\"' +\n' xmlns:wsde=\"http://www.daon.com/ws/de\">' +\n   '<wsde:GenericRequestParameters><!-- mandatory -->' +\n    '<wsde:Timestamp>2016-04-18T14:07:37</wsde:Timestamp>' +\n    '<wsde:ApplicationIdentifier><!-- mandatory -->string</wsde:ApplicationIdentifier>' +\n    '<wsde:ApplicationUserIdentifier><!-- mandatory -->string</wsde:ApplicationUserIdentifier>' +\n   '</wsde:GenericRequestParameters>' +\n   '<schema:Version>V4_1</schema:Version>' +\n   '<schema:ServiceProviderIdentifier>' + cid.serviceProvider + '</schema:ServiceProviderIdentifier>' +\n   '<schema:CustomerIdentifier>' + cid.customerID + '</schema:CustomerIdentifier>' +\n   '<schema:SPTransactionIdentifier>' + cid.tranID + '</schema:SPTransactionIdentifier>' +\n   '<schema:ReturnGpsCoordinates>false</schema:ReturnGpsCoordinates>' +\n  '</schema:GetTransactionStatusRequest>' +\n '</soap-env:Body>' +\n'</soap-env:Envelope>'\nmsg.headers = {'content-type':'text/xml',\n    'accept' : 'application/xml',\n    'SOAPAction' : 'http://www.daon.com/ws/identityx/ServiceProviderGateway/GetTransactionStatus'\n};\nmsg.cidwait = true;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 296.6428527832031,
+			"y" : 355.2856750488281,
+			"wires" : [ [ "b44e5989.cf5c58" ] ]
+		},
+		{
+			"id" : "b44e5989.cf5c58",
+			"type" : "subflow:fa1d17e1.0ff8a8",
+			"z" : "9de0b081.220408",
+			"name" : "Check Transaction",
+			"x" : 361.7857360839844,
+			"y" : 438.7143249511719,
+			"wires" : [ [ "8ff5a5e6.89754" ] ]
+		},
+		{
+			"id" : "f6bb8af3.63447",
+			"type" : "delay",
+			"z" : "9de0b081.220408",
+			"name" : "",
+			"pauseType" : "delay",
+			"timeout" : "15",
+			"timeoutUnits" : "seconds",
+			"rate" : "1",
+			"nbRateUnits" : "1",
+			"rateUnits" : "second",
+			"randomFirst" : "1",
+			"randomLast" : "5",
+			"randomUnits" : "seconds",
+			"drop" : false,
+			"x" : 249.42849731445312,
+			"y" : 278.4285888671875,
+			"wires" : [ [ "afd8ba0b.9fd4d8" ] ]
+		},
+		{
+			"id" : "8ff5a5e6.89754",
+			"type" : "function",
+			"z" : "9de0b081.220408",
+			"name" : "Check For Response",
+			"func" : "var cid = global.get(\"cid\");\ncid.pollCount = cid.pollCount + 1;\n\nmsg.cidwait = true;\nvar transactionStatus = msg.payload.body.ns2ResponseData[0].ns2TransactionStatus[0];\nif (transactionStatus === \"VERIFICATION_SUCCESSFUL\"){\n    msg.cidwait = false;\n} else {\n  if (transactionStatus === \"VERIFICATION_PENDING\"){\n    if (cid.pollCount >= cid.pollMax){\n         msg.cidwait = false;\n    }\n  } else {\n    msg.cidwait = false;\n  }\n}\ncid.transactionStatus = transactionStatus;\nglobal.set(\"cid\", cid);\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 425.2857971191406,
+			"y" : 525.1429443359375,
+			"wires" : [ [ "34d2b2.8459954e" ] ]
+		},
+		{
+			"id" : "34d2b2.8459954e",
+			"type" : "switch",
+			"z" : "9de0b081.220408",
+			"name" : "Response pending?",
+			"property" : "cidwait",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "false"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 481.5714416503906,
+			"y" : 607.71435546875,
+			"wires" : [ [ "7d594779.bf2618" ], [ "2a6bc6b4.b36daa" ] ]
+		},
+		{
+			"id" : "7d594779.bf2618",
+			"type" : "function",
+			"z" : "9de0b081.220408",
+			"name" : "Build response",
+			"func" : "// Possible results:\n// VERIFICATION_PENDING\n// VERIFICATION_SUCCESSFUL\n// VERIFICATION_FAILED\n// FRAUD\n// EXPIRED_WITH_VERIFICATION_PENDING\n// EXPIRED_WITH_VERIFICATION_FAILED\n// DECLINED\n\nvar cid = global.get(\"cid\");\nvar cidResponse = {status: '', tranid: cid.tranID, trandesc: cid.tranDesc, policy:cid.policy};\nif (cid.transactionStatus === \"VERIFICATION_SUCCESSFUL\") {\n    cidResponse.status = \"Approved\";\n} else {\n    if (cid.transactionStatus === \"VERIFICATION_PENDING\" || cid.transactionStatus === \"EXPIRED_WITH_VERIFICATION_PENDING\" || cid.transactionStatus === \"EXPIRED_WITH_VERIFICATION_FAILED\" ){\n        cidResponse.status = \"Expired\";\n    } else {\n        if (cid.transactionStatus === \"DECLINED\"){\n            cidResponse.status = \"Declined\";\n        } else {\n            if (cid.transactionStatus === \"FRAUD\"){\n                cidResponse.status = \"Fraud\";\n            } else {\n                cidResponse.status = \"Error\";\n            }\n        }\n    }\n}\nmsg.payload = cidResponse;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 571.4285888671875,
+			"y" : 48.142799377441406,
+			"wires" : [ [ "5d680a29.d2fbcc" ] ]
+		}, {
+			"id" : "2a6bc6b4.b36daa",
+			"type" : "delay",
+			"z" : "9de0b081.220408",
+			"name" : "",
+			"pauseType" : "delay",
+			"timeout" : "5",
+			"timeoutUnits" : "seconds",
+			"rate" : "1",
+			"nbRateUnits" : "1",
+			"rateUnits" : "second",
+			"randomFirst" : "1",
+			"randomLast" : "5",
+			"randomUnits" : "seconds",
+			"drop" : false,
+			"x" : 249,
+			"y" : 714,
+			"wires" : [ [ "afd8ba0b.9fd4d8" ] ]
+		} ]

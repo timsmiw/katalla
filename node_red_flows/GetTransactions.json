@@ -1,0 +1,51 @@
+[
+		{
+			"id" : "e23bc864.5e1d7",
+			"type" : "tab",
+			"label" : "Get Transactions"
+		},
+		{
+			"id" : "e8453176.7862b8",
+			"type" : "http in",
+			"z" : "e23bc864.5e1d7",
+			"name" : "Get Transactions",
+			"url" : "/account/:account/transactions",
+			"method" : "get",
+			"swaggerDoc" : "",
+			"x" : 92.85714721679688,
+			"y" : 35.82141876220703,
+			"wires" : [ [ "6af3f04d.69576" ] ]
+		},
+		{
+			"id" : "17686aca.099435",
+			"type" : "http request",
+			"z" : "e23bc864.5e1d7",
+			"name" : "CFT Get Transactions",
+			"method" : "GET",
+			"ret" : "txt",
+			"url" : "http://srvpocanz001.csc-fsg.com/hoganapi/hoganapi/cftrs/services/v1/accounts/{{{account}}}/transactions?coid={{{coid}}}&accounttype={{{accounttype}}}&offset=0&limit=100",
+			"tls" : "",
+			"x" : 248.4285888671875,
+			"y" : 191.3214111328125,
+			"wires" : [ [ "e034a54d.5ccb2" ] ]
+		},
+		{
+			"id" : "6af3f04d.69576",
+			"type" : "function",
+			"z" : "e23bc864.5e1d7",
+			"name" : "Setup CFT Call",
+			"func" : "msg.account = msg.req.params.account;\nmsg.coid = msg.payload.coid;\nmsg.accounttype = msg.payload.accounttype;\nmsg.offset = 0;\nmsg.limit = 100;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 164.42852783203125,
+			"y" : 111.03569793701172,
+			"wires" : [ [ "17686aca.099435" ] ]
+		}, {
+			"id" : "e034a54d.5ccb2",
+			"type" : "http response",
+			"z" : "e23bc864.5e1d7",
+			"name" : "Transactions Out",
+			"x" : 383.2857360839844,
+			"y" : 264.9285583496094,
+			"wires" : []
+		} ]

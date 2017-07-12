@@ -1,0 +1,41 @@
+{
+  "name": "katalla",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {},
+  "engines": {
+    "node": "4.x"
+  },
+  "dependencies": {
+    "async": "^2.1.5",
+    "body-parser": "^1.16.1",
+    "bootstrap": "^3.3.7",
+    "cfenv": "^1.0.4",
+    "cloudant": "^1.7.1",
+    "connect-ensure-login": "^0.1.1",
+    "connect-redis": "^3.2.0",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.1",
+    "dotenv": "^4.0.0",
+    "express": "^4.14.1",
+    "express-session": "^1.15.1",
+    "g11n-pipeline": "^1.3.0",
+    "hfc": "^0.6.5",
+    "morgan": "^1.8.1",
+    "openwhisk": "^3.5.1",
+    "optional": "^0.1.3",
+    "passport": "^0.3.2",
+    "passport-idaas-openidconnect": "^2.0.1",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.0-beta11",
+    "redis": "^2.6.5",
+    "request": "^2.79.0",
+    "serve-favicon": "^2.4.0",
+    "twilio": "^2.11.1",
+    "watson-developer-cloud": "^2.26.0",
+    "winston": "^2.3.1"
+  }
+}

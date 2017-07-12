@@ -1,0 +1,16 @@
+extends layout
+
+append head
+	link(href='/stylesheets/signin.css', rel='stylesheet')
+
+block content
+	.main.container
+		form.form-signin(method='POST' action='/login')
+			h2.form-signin-heading Please sign in
+			div.form-group
+				label.sr-only(for='username') User Name
+				input.form-control(type='text' id='username' name='username' placeholder='User Name' value=defusername)
+			div.form-group
+				label.sr-only(for='password') Password
+				input.form-control(type='password' id='password' placeholder='password' name='password')
+			button.btn.btn-lg.btn-primary.btn-block(type='submit') Sign in 

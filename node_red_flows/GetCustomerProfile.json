@@ -1,0 +1,137 @@
+[
+		{
+			"id" : "2aff92a4.5f8576",
+			"type" : "tab",
+			"label" : "Get Customer Profile"
+		},
+		{
+			"id" : "6f0c65e0.2fc86c",
+			"type" : "http in",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Get customer",
+			"url" : "/profile/:customer",
+			"method" : "get",
+			"swaggerDoc" : "",
+			"x" : 91.28570556640625,
+			"y" : 39.428565979003906,
+			"wires" : [ [ "de735b85.4fcbd8" ] ]
+		},
+		{
+			"id" : "e12d2855.0eb458",
+			"type" : "cloudant in",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Lookup Customer",
+			"cloudant" : "7d9cd0e.a893e3",
+			"database" : "banker",
+			"service" : "_ext_",
+			"search" : "_id_",
+			"design" : "",
+			"index" : "",
+			"x" : 182.71429443359375,
+			"y" : 176,
+			"wires" : [ [ "46c39635.c6a108" ] ]
+		},
+		{
+			"id" : "be3a6864.42c47",
+			"type" : "split",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Fan out Balance Calls",
+			"splt" : "\\n",
+			"x" : 272.1428527832031,
+			"y" : 322.5713806152344,
+			"wires" : [ [ "26e77fcc.c6f388" ] ]
+		},
+		{
+			"id" : "b23c41b2.6771a8",
+			"type" : "join",
+			"z" : "2aff92a4.5f8576",
+			"name" : "",
+			"mode" : "auto",
+			"build" : "string",
+			"property" : "payload",
+			"propertyType" : "msg",
+			"key" : "topic",
+			"joiner" : "\\n",
+			"timeout" : "",
+			"count" : "",
+			"x" : 515.4285278320312,
+			"y" : 86.99994659423828,
+			"wires" : [ [ "79976d01.fc6f1c" ] ]
+		},
+		{
+			"id" : "ea1426b9.14671",
+			"type" : "http request",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Get Hogan Balance",
+			"method" : "GET",
+			"ret" : "obj",
+			"url" : "http://srvpocanz001.csc-fsg.com/hoganapi/hoganapi/cftrs/services/v1/accounts/{{{account}}}?coid={{{coid}}}&accounttype={{{accttype}}}",
+			"tls" : "",
+			"x" : 356.1428527832031,
+			"y" : 480.5713806152344,
+			"wires" : [ [ "b23c41b2.6771a8" ] ]
+		},
+		{
+			"id" : "6c6e2059.4fc0f8",
+			"type" : "http response",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Customer Profile Out",
+			"x" : 651.5714111328125,
+			"y" : 247.7142333984375,
+			"wires" : []
+		},
+		{
+			"id" : "de735b85.4fcbd8",
+			"type" : "function",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Setup Customer",
+			"func" : "msg.payload = msg.req.params.customer;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 147.5714111328125,
+			"y" : 105.99999237060547,
+			"wires" : [ [ "e12d2855.0eb458" ] ]
+		},
+		{
+			"id" : "46c39635.c6a108",
+			"type" : "function",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Extract Accounts",
+			"func" : "msg.saved = msg.payload\nmsg.payload = msg.payload.accountLink\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 233.42861938476562,
+			"y" : 247.71429443359375,
+			"wires" : [ [ "be3a6864.42c47" ] ]
+		},
+		{
+			"id" : "26e77fcc.c6f388",
+			"type" : "function",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Setup Balance Call",
+			"func" : "msg.account = msg.payload.number\nmsg.coid = msg.payload.coid\nmsg.accttype = msg.payload.type\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 306.8571472167969,
+			"y" : 398.28570556640625,
+			"wires" : [ [ "ea1426b9.14671" ] ]
+		},
+		{
+			"id" : "79976d01.fc6f1c",
+			"type" : "function",
+			"z" : "2aff92a4.5f8576",
+			"name" : "Build Response",
+			"func" : "var bundle = msg.payload;\nmsg.payload = msg.saved;\nvar totalPosition = 0;\nfor (i = 0; i < bundle.length; i++) {\n    var balanceInfo = bundle[i];\n    msg.payload.accountLink[i].balanceInfo = balanceInfo;\n    totalPosition = totalPosition + Number(balanceInfo.availablebalance);\n}\nmsg.payload.totalPosition = totalPosition.toFixed(2);\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 587.4286499023438,
+			"y" : 161.28564453125,
+			"wires" : [ [ "6c6e2059.4fc0f8" ] ]
+		},
+		{
+			"id" : "7d9cd0e.a893e3",
+			"type" : "cloudant",
+			"z" : "",
+			"host" : "74f206ff-09e9-449d-8e5e-680578bcb9a5-bluemix.cloudant.com",
+			"name" : "KatallaDB"
+		} ]
