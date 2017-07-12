@@ -1,0 +1,219 @@
+[
+		{
+			"id" : "1bacf279.5b9db6",
+			"type" : "tab",
+			"label" : "Login"
+		},
+		{
+			"id" : "6b213515.dd278c",
+			"type" : "http request",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Get user object",
+			"method" : "GET",
+			"ret" : "obj",
+			"url" : "https://74f206ff-09e9-449d-8e5e-680578bcb9a5-bluemix.cloudant.com/auth/{{{user}}}",
+			"tls" : "",
+			"x" : 159,
+			"y" : 198,
+			"wires" : [ [ "7f6c9d7a.209384" ] ]
+		},
+		{
+			"id" : "9ecb7174.3533b8",
+			"type" : "http in",
+			"z" : "1bacf279.5b9db6",
+			"name" : "",
+			"url" : "/authenticatelogin",
+			"method" : "post",
+			"swaggerDoc" : "",
+			"x" : 127,
+			"y" : 46,
+			"wires" : [ [ "a6f5e92c.9b03f8" ] ]
+		},
+		{
+			"id" : "a6f5e92c.9b03f8",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Setup",
+			"func" : "msg.user = msg.payload.user;\nmsg.secret = msg.payload.secret;\nmsg.original = msg.payload;\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 98,
+			"y" : 131,
+			"wires" : [ [ "6b213515.dd278c" ] ]
+		},
+		{
+			"id" : "c919ed94.19e208",
+			"type" : "http response",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Login Out",
+			"x" : 1143.571533203125,
+			"y" : 375.4285583496094,
+			"wires" : []
+		},
+		{
+			"id" : "9d415453.2a5ba",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Not Found",
+			"func" : "msg.statusCode = 404;\nmsg.payload = {\"error\": \"User not found\"};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 773,
+			"y" : 347,
+			"wires" : [ [ "c919ed94.19e208" ] ]
+		},
+		{
+			"id" : "7f6c9d7a.209384",
+			"type" : "switch",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Check Response",
+			"property" : "statusCode",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "200",
+				"vt" : "str"
+			}, {
+				"t" : "eq",
+				"v" : "404",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 3,
+			"x" : 170,
+			"y" : 307,
+			"wires" : [ [ "87eb142f.7fa46" ], [ "9d415453.2a5ba" ],
+					[ "bc6e6da5.c4c1f" ] ]
+		},
+		{
+			"id" : "bc6e6da5.c4c1f",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Unknown Error",
+			"func" : "msg.statusCode = 500;\nmsg.payload = {\"error\": \"Unknown Error\"};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 592.2857666015625,
+			"y" : 381.8571472167969,
+			"wires" : [ [ "c919ed94.19e208" ] ]
+		},
+		{
+			"id" : "87eb142f.7fa46",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Basic Auth",
+			"func" : "msg.auth = msg.payload;\nif (msg.payload.secret === msg.secret) {\n    msg.payload.pw = 'validated';\n} else {\n    msg.payload.pw = 'failed';\n}\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 356.7143249511719,
+			"y" : 93.28571319580078,
+			"wires" : [ [ "9c5dc1ee.e69948" ] ]
+		},
+		{
+			"id" : "9c5dc1ee.e69948",
+			"type" : "switch",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Good Password?",
+			"property" : "payload.pw",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "validated",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 412.7143249511719,
+			"y" : 284.7142639160156,
+			"wires" : [ [ "259ea6e6.bd0b5a" ], [ "299b6878.8fa8e8" ] ]
+		},
+		{
+			"id" : "299b6878.8fa8e8",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Not Authorized",
+			"func" : "msg.statusCode = 403;\nmsg.payload = {\"error\": \"Validation failed\"};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 967.0001220703125,
+			"y" : 317.71429443359375,
+			"wires" : [ [ "c919ed94.19e208" ] ]
+		},
+		{
+			"id" : "89329af7.c38b",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Validated",
+			"func" : "msg.statusCode = 200;\nmsg.payload = {'user': msg.auth._id, 'status': 'validated'};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 1038.285888671875,
+			"y" : 257.2856750488281,
+			"wires" : [ [ "c919ed94.19e208" ] ]
+		},
+		{
+			"id" : "259ea6e6.bd0b5a",
+			"type" : "switch",
+			"z" : "1bacf279.5b9db6",
+			"name" : "MFA?",
+			"property" : "payload.mfa",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "true"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 450.1428527832031,
+			"y" : 221.71426391601562,
+			"wires" : [ [ "e51f5cb9.9b26e8" ], [ "89329af7.c38b" ] ]
+		},
+		{
+			"id" : "188fc072.3ee08",
+			"type" : "http request",
+			"z" : "1bacf279.5b9db6",
+			"name" : "MFA Service",
+			"method" : "POST",
+			"ret" : "obj",
+			"url" : "https://katallaflows.mybluemix.net/Authenticate",
+			"tls" : "",
+			"x" : 630.28564453125,
+			"y" : 174.71429443359375,
+			"wires" : [ [ "e6816f57.f696e8" ] ]
+		},
+		{
+			"id" : "e51f5cb9.9b26e8",
+			"type" : "function",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Setup MFA",
+			"func" : "msg.payload = {\"profile\": msg.auth.confidentid, \"policy\": \"low\", \"description\": \"bankomatic login\"};\nmsg.headers = {'content-type':'application/json',\n    'accept' : 'application/json'\n};\nreturn msg;",
+			"outputs" : 1,
+			"noerr" : 0,
+			"x" : 581.142822265625,
+			"y" : 95.99999237060547,
+			"wires" : [ [ "188fc072.3ee08" ] ]
+		}, {
+			"id" : "e6816f57.f696e8",
+			"type" : "switch",
+			"z" : "1bacf279.5b9db6",
+			"name" : "Check Status",
+			"property" : "payload.status",
+			"propertyType" : "msg",
+			"rules" : [ {
+				"t" : "eq",
+				"v" : "Approved",
+				"vt" : "str"
+			}, {
+				"t" : "else"
+			} ],
+			"checkall" : "true",
+			"outputs" : 2,
+			"x" : 803.28564453125,
+			"y" : 214.5714111328125,
+			"wires" : [ [ "89329af7.c38b" ], [ "299b6878.8fa8e8" ] ]
+		} ]
